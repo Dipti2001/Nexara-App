@@ -1,5 +1,6 @@
 import cv2
 import streamlit as st
+from pathlib import Path
 from model_utils import process_frame, mp_holistic
 import numpy as np
 
@@ -10,7 +11,7 @@ st.title("ASL Detection ML Model (Interactive Application)")
 
 
 # Use the beta_columns feature to create a 2-column layout
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(0)
 
 # Set up the left column with the user profile and camera feed
 with col1:
