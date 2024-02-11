@@ -11,7 +11,7 @@ st.title("ASL Detection ML Model (Interactive Application)")
 
 
 # Use the beta_columns feature to create a 2-column layout
-col1, col2 = st.columns(0)
+col1, col2 = st.columns(1)
 
 # Set up the left column with the user profile and camera feed
 with col1:
@@ -41,7 +41,7 @@ cap = None
 
 # Main loop for the video feed
 if start_button_pressed:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     sequence = []  # Initialize an empty list for storing sequences
     
     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
