@@ -4,6 +4,7 @@ import mediapipe as mp
 from tensorflow.keras.models import load_model
 
 # Initialize MediaPipe Holistic model and drawing utilities within a context manager
+mp_holistic = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
 # Load the pre-trained model only once
