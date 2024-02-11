@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoTransformerBase
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase
 import cv2
 from model_utils import process_frame, mp_holistic
 import av
@@ -8,7 +8,7 @@ import av
 st.set_page_config(layout="wide")
 st.title("ASL Detection ML Model (Interactive Application)")
 
-# Use the beta_columns feature to create a 2-column layout
+# Use the columns feature to create a 2-column layout
 col1, col2 = st.columns(2)
 
 # Set up the right column with the device status
@@ -26,12 +26,12 @@ rtc_configuration = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-# Define a VideoTransformer class to process video frames
-class ASLTransformer(VideoTransformerBase):
+# Define a VideoProcessor class to process video frames
+class ASLProcessor(VideoProcessorBase):
     def __init__(self):
         self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         
-    def transform(self, frame):
+    async def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         
         # Process the frame with your ML model or custom logic
@@ -50,6 +50,6 @@ with col1:
     
     # Start the WebRTC streamer
     webrtc_ctx = webrtc_streamer(key="example", 
-                                 video_transformer_factory=ASLTransformer,
-                                 rtc_configuration=rtc_configuration)
-
+                                 video_processor_factory=ASLProcessor,
+                                 rtc_configuration=rtc_configuration,
+                                 async_processing=True)
