@@ -3,5 +3,6 @@ pathlib
 opencv-contrib-python
 opencv-python-headless
 streamlit
+streamlit-webrtc
 mediapipe
 tensorflow
