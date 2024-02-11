@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase, WebRtcMode
 import cv2
 import av
 from model_utils import process_frame, mp_holistic
@@ -21,7 +21,7 @@ with col2:
     st.image('cup.png', width=250)  # Example path to your device image
     st.write("Cup")
 
-# Define the RTC configuration (optional)
+# Define the RTC configuration (optional, for better connectivity)
 rtc_configuration = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
@@ -31,16 +31,16 @@ class ASLProcessor(VideoProcessorBase):
     def __init__(self):
         self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         
-    def recv(self, frame):
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         img = frame.to_ndarray(format="bgr24")
         
-        # Process the frame with the ASL detection model
+        # Process the frame with your ML model or custom logic
         processed_image, _ = process_frame(img, [], self.holistic)
         
-        # Convert the colors from BGR to RGB for display consistency
+        # Convert the colors from BGR to RGB
         processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
         
-        # Convert the processed image back to an AV frame to be returned
+        # Convert the processed image back to an AV frame for streaming
         new_frame = av.VideoFrame.from_ndarray(processed_image, format="rgb24")
         return new_frame
 
@@ -48,8 +48,9 @@ class ASLProcessor(VideoProcessorBase):
 with col1:
     st.write("Video Detection time: 30 frames")
     
-    # Start the WebRTC streamer with the updated arguments
-    webrtc_ctx = webrtc_streamer(key="example", 
-                                 video_processor_factory=ASLProcessor,
+    # Start the WebRTC streamer with updated arguments for the latest streamlit-webrtc
+    webrtc_ctx = webrtc_streamer(key="example",
+                                 mode=WebRtcMode.SENDRECV,
                                  rtc_configuration=rtc_configuration,
+                                 video_processor_factory=ASLProcessor,
                                  async_processing=True)
