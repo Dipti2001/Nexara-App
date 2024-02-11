@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase
 import cv2
-from model_utils import process_frame, mp_holistic
 import av
+from model_utils import process_frame, mp_holistic
 
 # Set up the Streamlit interface
 st.set_page_config(layout="wide")
@@ -21,7 +21,7 @@ with col2:
     st.image('cup.png', width=250)  # Example path to your device image
     st.write("Cup")
 
-# Define the RTC configuration (optional, for better connectivity)
+# Define the RTC configuration (optional)
 rtc_configuration = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
@@ -34,13 +34,13 @@ class ASLProcessor(VideoProcessorBase):
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         
-        # Process the frame with your ML model or custom logic
+        # Process the frame with the ASL detection model
         processed_image, _ = process_frame(img, [], self.holistic)
         
-        # Convert the colors from BGR to RGB
+        # Convert the colors from BGR to RGB for display consistency
         processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
         
-        # Convert the processed image back to an AV frame
+        # Convert the processed image back to an AV frame to be returned
         new_frame = av.VideoFrame.from_ndarray(processed_image, format="rgb24")
         return new_frame
 
@@ -48,7 +48,8 @@ class ASLProcessor(VideoProcessorBase):
 with col1:
     st.write("Video Detection time: 30 frames")
     
-    # Start the WebRTC streamer using the new video_processor_factory argument
+    # Start the WebRTC streamer with the updated arguments
     webrtc_ctx = webrtc_streamer(key="example", 
                                  video_processor_factory=ASLProcessor,
-                                 rtc_configuration=rtc_configuration)
+                                 rtc_configuration=rtc_configuration,
+                                 async_processing=True)
