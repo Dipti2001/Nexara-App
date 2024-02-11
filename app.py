@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoTransformerBase
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase
 import cv2
 from model_utils import process_frame, mp_holistic
 import av
@@ -21,17 +21,17 @@ with col2:
     st.image('cup.png', width=250)  # Example path to your device image
     st.write("Cup")
 
-# Define the RTC configuration (optional, for STUN/TURN servers)
+# Define the RTC configuration (optional, for better connectivity)
 rtc_configuration = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-# Define a VideoTransformer class to process video frames
-class ASLTransformer(VideoTransformerBase):
+# Define a VideoProcessor class to process video frames
+class ASLProcessor(VideoProcessorBase):
     def __init__(self):
         self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         
-    def transform(self, frame):
+    def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         
         # Process the frame with your ML model or custom logic
@@ -48,9 +48,7 @@ class ASLTransformer(VideoTransformerBase):
 with col1:
     st.write("Video Detection time: 30 frames")
     
-    # Start the WebRTC streamer
+    # Start the WebRTC streamer using the new video_processor_factory argument
     webrtc_ctx = webrtc_streamer(key="example", 
-                                 video_transformer_factory=ASLTransformer,
+                                 video_processor_factory=ASLProcessor,
                                  rtc_configuration=rtc_configuration)
-
-# Additional logic can be added here, for example, to handle stop conditions or display results
